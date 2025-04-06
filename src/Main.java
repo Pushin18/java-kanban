@@ -1,4 +1,5 @@
 import model.Status;
+import model.Task;
 
 public static void main(String[] args) {
 
@@ -25,6 +26,7 @@ public static void main(String[] args) {
 
 
     // Обновление
+
     final model.Task task = TaskManager.getTask(taskId2);
      task.setStatus(Status.DONE);
     TaskManager.updateTask(task);
@@ -71,6 +73,10 @@ public static void main(String[] args) {
 
     // Удаление
     System.out.println("DELETE: Task1");
-    TaskManager.deleteTask(taskId1);
+    TaskManager.deleteSubtasks();
+
+
+
 
 }
+
