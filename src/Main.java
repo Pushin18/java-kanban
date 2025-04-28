@@ -1,10 +1,11 @@
 import model.Status;
-import model.Task;
+import service.InMemoryTaskManager;
+import service.TaskManager;
 
 public static void main(String[] args) {
 
 
-    TaskManager TaskManager = new TaskManager();
+    TaskManager TaskManager = new InMemoryTaskManager();
 
     // Создание
     model.Task task1 = new model.Task("model.Task #1", "Task1 description");
