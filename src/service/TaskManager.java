@@ -3,15 +3,16 @@ package service;
 import model.Status;
 import model.Subtask;
 import model.Task;
+import model.Epic;
 
 import java.util.ArrayList;
 
 public interface TaskManager {
-    int createTask(model.Task task);
+    int createTask(Task task);
 
-    int createEpic(model.Epic epic);
+    int createEpic(Epic epic);
 
-    int createSubtask(model.Subtask subtask);
+    int createSubtask(Subtask subtask);
 
     void deleteTask(int id);
 
@@ -31,11 +32,11 @@ public interface TaskManager {
 
     model.Epic getEpic(int id);
 
-    void updateTask(model.Task task);
+    void updateTask(Task task);
 
-    void updateEpic(model.Epic epic);
+    void updateEpic(Epic epic);
 
-    void updateSubtask(model.Subtask subtask);
+    void updateSubtask(Subtask subtask);
 
     ArrayList<Subtask> getSubtasksByEpicId(int epicId);
 
@@ -45,7 +46,7 @@ public interface TaskManager {
 
     ArrayList<model.Epic> getEpics();
 
-    void updateEpicStatus(model.Epic epic);
+    void updateEpicStatus(Epic epic);
 
     void updateStatus(Task taskToChangeStatus, Status status);
 

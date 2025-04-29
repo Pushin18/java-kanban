@@ -8,26 +8,19 @@ import model.Task;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class InMemoryTaskManager implements TaskManager, HistoryManager {
-    HashMap<Integer, model.Task> tasks = new HashMap<>();
-    HashMap<Integer, model.Subtask> subtasks = new HashMap<>();
-    HashMap<Integer, model.Epic> epics = new HashMap<>();
+public class InMemoryTaskManager implements TaskManager {
+    Map<Integer, Task> tasks = new HashMap<>();
+    Map<Integer, Subtask> subtasks = new HashMap<>();
+    Map<Integer, Epic> epics = new HashMap<>();
 
     private int generatedId = 1;
 
-    ArrayList<Task> history = new ArrayList<>();
+    private final HistoryManager historyManager = Managers.getDefaultHistory();
 
     @Override
-    public void add(Task task){
-        if (history.size() == 10) {
-           history.removeFirst();
-        }
-        history.add(task);
-    }
-
-    @Override
-    public int createTask(model.Task task) {
+    public int createTask(Task task) {
         task.setId(generatedId++);
         tasks.put(task.getId(), task);
 
@@ -35,7 +28,7 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
     }
 
     @Override
-    public int createEpic(model.Epic epic) {
+    public int createEpic(Epic epic) {
         epic.setId(generatedId++);
         epics.put(epic.getId(), epic);
 
@@ -43,11 +36,9 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
     }
 
     @Override
-    public int createSubtask(model.Subtask subtask) {
+    public int createSubtask(Subtask subtask) {
         subtask.setId(generatedId++);
         subtasks.put(subtask.getId(), subtask);
-
-        // epics.get(subtask.getEpicID()).setSubtaskIds(generatedId);
         epics.get(subtask.getEpicID()).getSubtaskIds().add(subtask.getId());
         updateEpicStatus(epics.get(subtask.getEpicID()));
         return subtask.getId();
@@ -76,12 +67,12 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
     }
 
     @Override
-    public void deleteTasks(){
+    public void deleteTasks() {
         tasks.clear();
     }
 
     @Override
-    public void deleteSubtasks(){
+    public void deleteSubtasks() {
 
         for (Integer key : subtasks.keySet()) {
             Subtask subtask = subtasks.get(key);
@@ -94,7 +85,7 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
     }
 
     @Override
-    public void deleteEpics(){
+    public void deleteEpics() {
 
         for (Integer key : epics.keySet()) {
             Epic epic = epics.get(key);
@@ -105,11 +96,11 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
     }
 
     @Override
-    public model.Task getTask(int id) {
+    public Task getTask(int id) {
         if (tasks.get(id) == null) {
             throw new NullPointerException("Данной задачи нет в списке");
         }
-        add(tasks.get(id));
+        historyManager.add(tasks.get(id));
         return tasks.get(id);
     }
 
@@ -118,7 +109,7 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
         if (subtasks.get(id) == null) {
             throw new NullPointerException("Данной подзадачи нет в списке");
         }
-        add(subtasks.get(id));
+        historyManager.add(subtasks.get(id));
         return subtasks.get(id);
     }
 
@@ -127,12 +118,12 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
         if (epics.get(id) == null) {
             throw new NullPointerException("Данного эпика нет в списке");
         }
-        add(epics.get(id));
+        historyManager.add(epics.get(id));
         return epics.get(id);
     }
 
     @Override
-    public void updateTask(model.Task task) {
+    public void updateTask(Task task) {
         if (tasks.containsKey(task.getId())) {
             tasks.put(task.getId(), task);
 
@@ -140,7 +131,7 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
     }
 
     @Override
-    public void updateEpic(model.Epic epic) {
+    public void updateEpic(Epic epic) {
         if (epics.containsKey(epic.getId())) {
             epics.put(epic.getId(), epic);
             updateEpicStatus(epic);
@@ -148,7 +139,7 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
     }
 
     @Override
-    public void updateSubtask(model.Subtask subtask) {
+    public void updateSubtask(Subtask subtask) {
         if (subtasks.containsKey(subtask.getId())) {
             subtasks.put(subtask.getId(), subtask);
             updateEpicStatus(epics.get(subtask.getEpicID()));
@@ -157,9 +148,9 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
     }
 
     @Override
-    public ArrayList<model.Subtask> getSubtasksByEpicId(int epicId) {
+    public ArrayList<Subtask> getSubtasksByEpicId(int epicId) {
         List<Integer> subtasksIDList = epics.get(epicId).getSubtaskIds();
-        ArrayList<model.Subtask> subtasksNameList = new ArrayList<>();
+        ArrayList<Subtask> subtasksNameList = new ArrayList<>();
         for (Integer integer : subtasksIDList) {
             subtasksNameList.add(subtasks.get(integer));
         }
@@ -167,24 +158,24 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
     }
 
     @Override
-    public ArrayList<model.Task> getTasks() {
+    public ArrayList<Task> getTasks() {
         return new ArrayList<>(tasks.values());
     }
 
     @Override
-    public ArrayList<model.Subtask> getSubtasks() {
+    public ArrayList<Subtask> getSubtasks() {
 
         return new ArrayList<>(subtasks.values());
     }
 
     @Override
-    public ArrayList<model.Epic> getEpics() {
+    public ArrayList<Epic> getEpics() {
 
         return new ArrayList<>(epics.values());
     }
 
     @Override
-    public void updateEpicStatus(model.Epic epic) {
+    public void updateEpicStatus(Epic epic) {
         ArrayList<Status> statusOfSubtasks = new ArrayList<>();
         int countNew = 0;
         int countDone = 0;
@@ -208,13 +199,8 @@ public class InMemoryTaskManager implements TaskManager, HistoryManager {
     }
 
     @Override
-    public void updateStatus(Task taskToChangeStatus, Status status){
+    public void updateStatus(Task taskToChangeStatus, Status status) {
         taskToChangeStatus.setStatus(status);
-    }
-
-    @Override
-    public ArrayList<Task> getHistory() {
-        return history;
     }
 }
 

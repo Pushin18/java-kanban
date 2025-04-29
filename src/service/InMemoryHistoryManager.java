@@ -3,15 +3,16 @@ package service;
 import model.Task;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class InMemoryHistoryManager implements HistoryManager {
 
-    ArrayList<Task> history = new ArrayList<>();
+    List<Task> history = new ArrayList<>();
 
 
     @Override
     public ArrayList<Task> getHistory() {
-        return history;
+        return new ArrayList<>(history);
     }
 
     @Override
